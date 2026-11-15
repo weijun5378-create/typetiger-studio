@@ -1,4 +1,9 @@
 import { isJournalCategory, type JournalCategory } from "./journal-config";
+import fs from "node:fs";
+import path from "node:path";
+import { journalToc, type JournalArticle } from "./journal-shared";
+export { formatJournalDate, journalToc } from "./journal-shared";
+export type { JournalArticle, TocItem } from "./journal-shared";
 
 export type JournalMeta = {
   title: string;
@@ -14,14 +19,8 @@ export type JournalMeta = {
   source?: string;
 };
 
-export type TocItem = { level: 2 | 3; title: string; id: string };
-export type JournalArticle = JournalMeta & { body: string; toc: TocItem[] };
-
-const markdownFiles = import.meta.glob(["../content/journal/**/*.md", "!../content/journal/withdrawn/**"], {
-  eager: true,
-  query: "?raw",
-  import: "default",
-}) as Record<string, string>;
+function readMarkdownFiles(directory:string):Record<string,string>{const result:Record<string,string>={};for(const entry of fs.readdirSync(directory,{withFileTypes:true})){if(entry.name==="withdrawn")continue;const absolute=path.join(directory,entry.name);if(entry.isDirectory())Object.assign(result,readMarkdownFiles(absolute));else if(entry.name.endsWith(".md"))result[absolute]=fs.readFileSync(absolute,"utf8");}return result;}
+const markdownFiles=readMarkdownFiles(path.join(process.cwd(),"content/journal"));
 
 function parseScalar(value: string) {
   const trimmed = value.trim();
@@ -34,19 +33,6 @@ function parseScalar(value: string) {
     try { return JSON.parse(trimmed); } catch { return trimmed.slice(1, -1); }
   }
   return trimmed.replace(/^'|'$/g, "");
-}
-
-function headingId(title: string, index: number) {
-  const value = title.toLowerCase().replace(/[`*_]/g, "").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
-  return value || `section-${index + 1}`;
-}
-
-export function journalToc(body: string): TocItem[] {
-  return [...body.matchAll(/^(#{2,3})\s+(.+)$/gm)].map((heading, index) => ({
-    level: heading[1].length as 2 | 3,
-    title: heading[2].trim(),
-    id: headingId(heading[2].trim(), index),
-  }));
 }
 
 function parseArticle(raw: string, source: string): JournalArticle {
@@ -100,8 +86,4 @@ export function getJournalNeighbours(slug: string) {
     previous: index > 0 ? articles[index - 1] : null,
     next: index >= 0 && index < articles.length - 1 ? articles[index + 1] : null,
   };
-}
-
-export function formatJournalDate(date: string) {
-  return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Shanghai" }).format(new Date(`${date}T00:00:00+08:00`));
 }

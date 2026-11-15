@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/server-env";
 import { assertAdminApi } from "@/lib/auth";
 import { listJournalRecords } from "@/lib/journal-repository";
 import { validateJournalInput } from "@/lib/journal-validation";

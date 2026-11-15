@@ -1,25 +1,31 @@
 # Typetiger Studio
 
-Typetiger Studio 是一个使用 Vinext/Next.js、Cloudflare D1、R2 与 ChatGPT 登录的作品集网站。公开首页只读取 `published` 案例；后台位于 `/admin`。
+Typetiger Studio 是一个使用 Next.js 的作品集网站。当前迁移分支使用 SQLite 保存结构化内容，并为腾讯云 COS 图片存储预留了迁移边界。公开首页只读取 `published` 案例；后台位于 `/admin`。
 
 ## 数据与存储
 
 - D1（绑定名 `DB`）：案例、详情图元数据、分类和网站设置。
 - R2（绑定名 `BUCKET`）：后台上传的 JPG、PNG、WebP 图片。
 - `public/assets`：从第一版网站迁移的 6 张既有案例封面。
-- 管理员身份：ChatGPT 登录 + 服务端 `ADMIN_EMAILS` 白名单。
+- 管理员身份：服务端管理员邮箱、scrypt 密码哈希与签名 HttpOnly Cookie。
 
 正式内容不使用 localStorage、浏览器缓存或数据库 Base64 字段。
 
 ## 环境变量
 
-复制 `.env.example` 为 `.env`，设置：
+复制 `.env.example` 为 `.env`，设置管理员邮箱：
 
 ```env
-ADMIN_EMAILS=owner@example.com
+ADMIN_EMAIL=owner@example.com
 ```
 
-多个管理员使用英文逗号分隔。`.env` 已被 Git 忽略；线上值通过 Sites 环境变量管理。
+然后在本机交互式终端生成密码哈希和会话密钥：
+
+```bash
+npm run admin:credentials
+```
+
+将输出的 `ADMIN_PASSWORD_HASH` 和 `SESSION_SECRET` 加入 `.env`。命令输入密码时只显示星号，不会保存明文密码。`.env` 已被 Git 忽略，不得提交到仓库。
 
 ## 本地运行
 
@@ -32,13 +38,13 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 npm run dev
 ```
 
-本地访问 `/signin-with-chatgpt?return_to=/admin`，默认模拟账号为 `seedy@sites.test`。测试时需把它加入本地 `ADMIN_EMAILS`。
+本地访问 `/admin`，未登录时会自动进入 `/admin/login`。
 
 ## 初始化管理员与案例
 
-1. 在 Sites 环境变量中设置 `ADMIN_EMAILS`。
-2. 部署后用该邮箱对应的 ChatGPT 账号登录。
-3. 打开 `/admin`；首次使用时点击“迁移原有 6 个案例”。该操作可重复执行，不会复制数据。
+1. 设置 `ADMIN_EMAIL`、`ADMIN_PASSWORD_HASH` 和 `SESSION_SECRET`。
+2. 重启网站服务，打开 `/admin`并使用管理员邮箱和密码登录。
+3. 首次使用时点击“迁移原有 6 个案例”。该操作可重复执行，不会复制数据。
 
 Minibudi、Meet Pal、Magic Zoo、Capypets 默认是草稿；SpongeBob SquarePants 默认隐藏；Character Archetypes 默认公开。发布前应先确认授权和保密状态。
 
@@ -106,7 +112,7 @@ Journal 数据使用：
 
 - D1：`journal_articles`、`journal_categories`、`journal_versions`。
 - R2：`uploads/journal/YYYY-MM-DD/<uuid>.<ext>`。
-- 管理接口继续使用 ChatGPT 登录与 `ADMIN_EMAILS` 服务端白名单。
+- 管理接口使用独立管理员登录，所有写入操作都在服务端验证签名会话。
 - Markdown 不执行原始 HTML；链接和图片地址仅接受站内路径、HTTPS，以及链接的 `mailto:` / `tel:`。
 
 ### 现有 Markdown 一次性迁移

@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/server-env";
 import type { Category, Project, ProjectImage, SiteSettings } from "./types";
 import { defaultCategories, defaultProjects } from "./seed";
 
@@ -37,5 +37,5 @@ export async function getSettings(): Promise<SiteSettings> {
     db().prepare("UPDATE site_settings SET intro=?,updated_at=? WHERE id='main' AND intro=?").bind("以品牌策略为起点，为文具、消费品与授权项目建立清晰、鲜活且可延展的视觉系统。",now,"Designing brand systems, packaging and product stories for global stationery."),
     db().prepare("UPDATE site_settings SET about=?,updated_at=? WHERE id='main' AND about=?").bind("Typetiger Studio 是一间独立设计工作室。我们从品牌定位与产品语境出发，连接视觉识别、包装、角色主题、色彩材料与展示体验，让分散的想法成为一致、可识别并能持续生长的设计系统。",now,"Typetiger Studio works across brand identity, packaging, product design and visual systems. The studio turns scattered ideas into coherent product families—connecting positioning, characters, colour, materials and retail presentation."),
   ]);
-  return (await db().prepare("SELECT id,site_name siteName,intro,about,contact,social_links socialLinks,updated_at updatedAt FROM site_settings WHERE id='main'").first<SiteSettings>()) || { id:"main", siteName:"Typetiger Studio", intro:"以品牌策略为起点，为文具、消费品与授权项目建立清晰、鲜活且可延展的视觉系统。", about:"Typetiger Studio 是一间专注品牌与产品表达的独立设计工作室。", contact:"", socialLinks:"{}", updatedAt:"" };
+  return (await db().prepare("SELECT id,site_name siteName,intro,about,contact,social_links socialLinks,hero_eyebrow heroEyebrow,hero_title heroTitle,hero_title_zh heroTitleZh,hero_description heroDescription,hero_cta_label heroCtaLabel,updated_at updatedAt FROM site_settings WHERE id='main'").first<SiteSettings>()) || { id:"main", siteName:"Typetiger Studio", intro:"以品牌策略为起点，为文具、消费品与授权项目建立清晰、鲜活且可延展的视觉系统。", about:"Typetiger Studio 是一间专注品牌与产品表达的独立设计工作室。", contact:"", socialLinks:"{}", heroEyebrow:"Design Director · Portfolio & Journal", heroTitle:"Designing Products.\nBuilding Systems.", heroTitleZh:"从产品设计到品牌系统。", heroDescription:"一名设计总监的个人作品集与设计思考。关注产品、品牌、CMF 与包装之间的关系，也记录判断如何在真实项目中形成。", heroCtaLabel:"查看精选作品", updatedAt:"" };
 }

@@ -11,7 +11,11 @@ export type Project = {
 };
 export type ProjectImage = { id: string; projectId: string; objectKey: string; alt: string; focalPoint: FocalPoint; sortOrder: number; createdAt: string };
 export type Category = { id: string; name: string; sortOrder: number; createdAt: string; updatedAt: string };
-export type SiteSettings = { id: string; siteName: string; intro: string; about: string; contact: string; socialLinks: string; updatedAt: string };
+export type SiteSettings = {
+  id: string; siteName: string; intro: string; about: string; contact: string; socialLinks: string;
+  heroEyebrow: string; heroTitle: string; heroTitleZh: string; heroDescription: string; heroCtaLabel: string;
+  updatedAt: string;
+};
 
 export type JournalStatus = "draft" | "published" | "withdrawn";
 export type JournalCategoryRecord = { id: string; name: string; sortOrder: number; createdAt: string; updatedAt: string };

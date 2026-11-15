@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { TocItem } from "@/lib/journal";
+import type { TocItem } from "@/lib/journal-shared";
 
 function inline(text: string): ReactNode[] {
   const tokens = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g).filter(Boolean);

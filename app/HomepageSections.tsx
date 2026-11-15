@@ -1,5 +1,5 @@
-import type { JournalArticle } from "@/lib/journal";
-import { formatJournalDate } from "@/lib/journal";
+import type { JournalArticle } from "@/lib/journal-shared";
+import { formatJournalDate } from "@/lib/journal-shared";
 
 const expertise = [
   ["01", "产品与 CMF", "以色彩、材料与表面工艺策略，构建具有辨识度且协调统一的产品家族。"],

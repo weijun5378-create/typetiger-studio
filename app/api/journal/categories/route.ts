@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { assertAdminApi } from "@/lib/auth";
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/server-env";
 import { listJournalCategoriesDb } from "@/lib/journal-repository";
 
 export async function GET() {

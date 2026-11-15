@@ -12,11 +12,11 @@ const blank = (categoryId = ""): Project => ({
   createdAt: "", updatedAt: "", images: [],
 });
 
-async function json(url: string, options?: RequestInit) {
+async function json<T = unknown>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, options);
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || "网络请求失败");
-  return data;
+  const data: unknown = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(typeof data === "object" && data && "error" in data ? String(data.error) : "网络请求失败");
+  return data as T;
 }
 
 const focusOptions = ["center", "left", "right", "top", "bottom"] as const;
@@ -48,7 +48,7 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
     setLoading(true);
     try {
       const [projectData, categoryData, settingsData] = await Promise.all([
-        json("/api/projects"), json("/api/categories"), json("/api/settings"),
+        json<Project[]>("/api/projects"), json<Category[]>("/api/categories"), json<SiteSettings>("/api/settings"),
       ]);
       setProjects(projectData);
       setCategories(categoryData);
@@ -88,7 +88,7 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
     if (dirty && !confirm("当前修改尚未保存，确定离开？")) return;
     setSelecting(true);
     try {
-      const fullProject = await json(`/api/projects/${project.id}`);
+      const fullProject = await json<Project>(`/api/projects/${project.id}`);
       setCurrent(fullProject);
       setDirty(false);
       setPreviewed(false);
@@ -109,13 +109,13 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
       if (id) {
         await json(`/api/projects/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
       } else {
-        const result = await json("/api/projects", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+        const result = await json<{id:string}>("/api/projects", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
         id = result.id;
       }
       await json(`/api/projects/${id}/images`, {
         method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ images: current.images || [] }),
       });
-      const saved = await json(`/api/projects/${id}`);
+      const saved = await json<Project>(`/api/projects/${id}`);
       setCurrent(saved);
       setDirty(false);
       setSavedAt(new Date());
@@ -250,17 +250,13 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
     ] as [string, boolean][];
   }, [current]);
   const publishReady = publishChecks.every(([, ready]) => ready);
+  const missingPublishChecks = publishChecks.filter(([, ready]) => !ready).map(([label]) => label);
 
   const changeStatus = async (nextStatus: ProjectStatus) => {
     if (!current || nextStatus === current.status) return;
     if (nextStatus === "published") {
-      if (!publishReady) { notify("请先补齐发布前检查中未完成的项目"); return; }
-      if (dirty || !previewed) {
-        await previewProject();
-        notify("预览已打开；确认效果后，请再次点击发布");
-        return;
-      }
-      if (!confirm("已确认首页卡片和详情页效果，立即发布？")) return;
+      if (!publishReady) { notify(`请先补齐：${missingPublishChecks.join("、")}`); return; }
+      if (!confirm("请确认已检查首页卡片和详情页效果。正式发布后案例将立即公开；确定继续？")) return;
     } else if (!confirm(nextStatus === "hidden" ? "切换为隐藏后，案例不会出现在公开网站。确定继续？" : "切换为草稿后，案例不会出现在公开网站。确定继续？")) return;
     await save(nextStatus);
   };
@@ -336,7 +332,7 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
             <button type="button" className="btn" disabled={saving} onClick={() => save("draft")}>保存草稿</button>
             <button type="button" className="btn" disabled={saving} onClick={previewProject}>保存并预览</button>
             <button type="button" className="btn" disabled={saving} onClick={() => confirm("隐藏后不会出现在公开网站，确定继续？") && save("hidden")}>隐藏</button>
-            <button type="button" className="btn btn-primary" disabled={saving || !publishReady} title={!publishReady ? "请先补齐发布前检查项目" : dirty || !previewed ? "点击后将先保存并打开预览" : "发布案例"} onClick={() => changeStatus("published")}>{dirty || !previewed ? "预览后发布" : "发布"}</button>
+            <button type="button" className="btn btn-primary" disabled={saving} title={!publishReady ? `请先补齐：${missingPublishChecks.join("、")}` : previewed ? "已预览，可以正式发布" : "建议先预览，也可以直接正式发布"} onClick={() => changeStatus("published")}>{!publishReady ? "补齐资料后发布" : "正式发布"}</button>
           </div>
           {current.id && <div className="danger-zone"><button type="button" className="btn btn-danger" onClick={removeProject}>删除案例</button></div>}
         </> : <div className="admin-empty">选择一个案例开始编辑，或新建案例。</div>}
@@ -348,6 +344,11 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
     {tab === "settings" && settings && <section className="admin-panel"><div className="form-grid">
       <div className="field"><label>网站名称</label><input value={settings.siteName} onChange={(event) => { setSettings({ ...settings, siteName: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field"><label>联系方式</label><input value={settings.contact} onChange={(event) => { setSettings({ ...settings, contact: event.target.value }); setSettingsDirty(true); }} /></div>
+      <div className="field"><label>首页英文眉题</label><input value={settings.heroEyebrow} onChange={(event) => { setSettings({ ...settings, heroEyebrow: event.target.value }); setSettingsDirty(true); }} /></div>
+      <div className="field"><label>首页按钮文字</label><input value={settings.heroCtaLabel} onChange={(event) => { setSettings({ ...settings, heroCtaLabel: event.target.value }); setSettingsDirty(true); }} /></div>
+      <div className="field field-wide"><label>首页英文主标题（换行会保留）</label><textarea value={settings.heroTitle} onChange={(event) => { setSettings({ ...settings, heroTitle: event.target.value }); setSettingsDirty(true); }} /></div>
+      <div className="field field-wide"><label>首页中文标题</label><input value={settings.heroTitleZh} onChange={(event) => { setSettings({ ...settings, heroTitleZh: event.target.value }); setSettingsDirty(true); }} /></div>
+      <div className="field field-wide"><label>首页首屏介绍</label><textarea value={settings.heroDescription} onChange={(event) => { setSettings({ ...settings, heroDescription: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field field-wide"><label>首页介绍文字</label><textarea value={settings.intro} onChange={(event) => { setSettings({ ...settings, intro: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field field-wide"><label>About 内容</label><textarea value={settings.about} onChange={(event) => { setSettings({ ...settings, about: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field field-wide"><label>社交媒体链接（JSON）</label><textarea value={settings.socialLinks} onChange={(event) => { setSettings({ ...settings, socialLinks: event.target.value }); setSettingsDirty(true); }} /></div>

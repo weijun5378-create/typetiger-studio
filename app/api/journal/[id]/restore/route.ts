@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/server-env";
 import { assertAdminApi } from "@/lib/auth";
 import { createJournalVersion, getJournalRecord } from "@/lib/journal-repository";
 import type { JournalRecord } from "@/lib/types";
@@ -7,7 +7,7 @@ import type { JournalRecord } from "@/lib/types";
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await assertAdminApi(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const articleId = (await params).id; const { revision } = await request.json();
+  const articleId = (await params).id; const { revision } = await request.json() as { revision: number };
   const current = await getJournalRecord(articleId);
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const version = await env.DB.prepare("SELECT snapshot_json snapshot FROM journal_versions WHERE article_id=? AND revision=?").bind(articleId,Number(revision)).first<{snapshot:string}>();

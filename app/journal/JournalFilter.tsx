@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { JournalArticle } from "@/lib/journal";
-import { formatJournalDate } from "@/lib/journal";
+import type { JournalArticle } from "@/lib/journal-shared";
+import { formatJournalDate } from "@/lib/journal-shared";
 
 export default function JournalFilter({ articles }: { articles: JournalArticle[] }) {
   const [category, setCategory] = useState("全部");

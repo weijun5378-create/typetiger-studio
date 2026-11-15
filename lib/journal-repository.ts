@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/server-env";
 import { getLegacyJournalArticle, journalToc, listLegacyJournalArticles, type JournalArticle } from "./journal";
 import type { JournalCategoryRecord, JournalRecord, JournalVersion } from "./types";
 import { mediaUrl } from "./types";

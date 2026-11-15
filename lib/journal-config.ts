@@ -1,6 +1,6 @@
 import categories from "@/content/journal/categories.json";
 
-export const journalCategories = categories as readonly ["设计判断", "项目复盘", "设计管理", "观察与思考"];
+export const journalCategories = categories as unknown as readonly ["设计判断", "项目复盘", "设计管理", "观察与思考"];
 
 export type JournalCategory = (typeof journalCategories)[number];
 

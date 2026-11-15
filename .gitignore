@@ -45,6 +45,7 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+/.data/
 
 # Local-only Obsidian Journal source configuration.
 /journal-sync.config.json

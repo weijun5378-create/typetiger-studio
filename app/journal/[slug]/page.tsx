@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { formatJournalDate } from "@/lib/journal";
+import { formatJournalDate } from "@/lib/journal-shared";
 import { getPreviewJournalArticle, getPublicJournalArticle, getPublicJournalNeighbours } from "@/lib/journal-repository";
 import { requireAdmin } from "@/lib/auth";
 import MarkdownArticle from "../MarkdownArticle";

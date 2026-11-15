@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getSettings, listCategories, listProjects } from "@/lib/repository";
 import { listPublicJournalArticles } from "@/lib/journal-repository";
 import WorkGallery from "./WorkGallery";
-import { AboutPreview, Expertise, JournalPreview } from "./HomepageSections";
+import { AboutPreview, JournalPreview } from "./HomepageSections";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -21,13 +21,13 @@ export default async function Home() {
     </header>
     <main>
       <section className="intro homepage-hero" aria-labelledby="hero-title">
-        <p className="intro-eyebrow">Design Director · Portfolio &amp; Journal</p>
-        <h1 id="hero-title">Designing Products.<br />Building Systems.</h1>
-        <p className="hero-cn-title">从产品设计到品牌系统。</p>
-        <div className="hero-support"><p>一名设计总监的个人作品集与设计思考。关注产品、品牌、CMF 与包装之间的关系，也记录判断如何在真实项目中形成。</p><a className="intro-link" href="#work">查看精选作品 ↗</a></div>
+        <p className="intro-eyebrow">{settings.heroEyebrow}</p>
+        <h1 id="hero-title">{settings.heroTitle.split("\n").map((line, index) => <span key={`${line}-${index}`}>{line}{index < settings.heroTitle.split("\n").length - 1 && <br />}</span>)}</h1>
+        <p className="hero-cn-title">{settings.heroTitleZh}</p>
+        <div className="hero-support"><p>{settings.heroDescription}</p><a className="intro-link" href="#work">{settings.heroCtaLabel} ↗</a></div>
       </section>
       <WorkGallery projects={projects} categories={categories} />
-      <Expertise /><JournalPreview articles={journalArticles.slice(0, 3)} /><AboutPreview />
+      <JournalPreview articles={journalArticles.slice(0, 3)} /><AboutPreview />
     </main>
     <footer className="footer homepage-footer" id="contact">
       <div className="contact-lead"><p>关于设计、团队或下一次合作。</p><a className="contact-cta" href="/contact">联系交流 ↗</a></div>

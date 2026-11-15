@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* Standard Node.js server build for Tencent Lighthouse. */
+  agentRules: false,
 };
 
 export default nextConfig;
