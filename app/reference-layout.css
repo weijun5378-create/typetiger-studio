@@ -126,7 +126,7 @@
 .contact-lead .contact-cta{display:inline-block;max-width:1600px;margin:0;color:var(--nav-orange);font-family:"Songti SC",STSong,Georgia,serif;font-size:clamp(48px,7.6vw,124px);line-height:1.1;letter-spacing:-.06em}
 .contact-lead .contact-cta:hover,.contact-lead .contact-cta:focus-visible{color:var(--ink-strong)}
 .footer-row{display:flex;justify-content:space-between;gap:30px;padding-top:18px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
-.footer-row p{margin:0}.footer-row div{display:flex;gap:22px}.footer-row div:last-child{text-align:left}
+.footer-row p{margin:0}.icp-record{margin:8px 0 0;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.5}.icp-record a{color:inherit;text-decoration:none}.icp-record a:hover{text-decoration:underline}.footer-row div{display:flex;gap:22px}.footer-row div:last-child{text-align:left}
 
 @media(max-width:760px){
   .site-header,.homepage-header{grid-template-columns:1fr;padding:18px 18px 0;gap:18px}.site-header .nav,.homepage-header .nav{justify-content:flex-start;gap:16px;overflow-x:auto}.site-header .wordmark,.site-header .nav a{font-size:16px}
