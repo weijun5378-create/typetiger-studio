@@ -32,6 +32,7 @@ export default async function Home() {
     <footer className="footer homepage-footer" id="contact">
       <div className="contact-lead"><p>关于设计、团队或下一次合作。</p><a className="contact-cta" href="/contact">联系交流 ↗</a></div>
       <div className="footer-row"><p>{settings.siteName} © {new Date().getFullYear()}</p><div><span>产品 · 品牌 · 包装 · CMF</span><a href="#top">回到顶部 ↑</a></div></div>
+      <p><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">蜀ICP备2026072515号</a></p>
     </footer>
   </>;
 }
