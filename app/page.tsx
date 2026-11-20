@@ -3,6 +3,7 @@ import { getSettings, listCategories, listProjects } from "@/lib/repository";
 import { listPublicJournalArticles } from "@/lib/journal-repository";
 import WorkGallery from "./WorkGallery";
 import { AboutPreview, JournalPreview } from "./HomepageSections";
+import { parseAboutContent } from "@/lib/about-content";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -27,7 +28,7 @@ export default async function Home() {
         <div className="hero-support"><p>{settings.heroDescription}</p><a className="intro-link" href="#work">{settings.heroCtaLabel} ↗</a></div>
       </section>
       <WorkGallery projects={projects} categories={categories} />
-      <JournalPreview articles={journalArticles.slice(0, 3)} /><AboutPreview />
+      <JournalPreview articles={journalArticles.slice(0, 3)} /><AboutPreview content={parseAboutContent(settings.about)} />
     </main>
     <footer className="footer homepage-footer" id="contact">
       <div className="contact-lead"><p>关于设计、团队或下一次合作。</p><a className="contact-cta" href="/contact">联系交流 ↗</a></div>
