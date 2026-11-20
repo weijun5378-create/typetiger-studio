@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Category, Project, ProjectImage, ProjectStatus, SiteSettings } from "@/lib/types";
 import { mediaUrl } from "@/lib/types";
 import JournalAdmin from "./JournalAdmin";
+import { defaultAboutContent, parseAboutContent, serializeAboutContent, type AboutContent } from "@/lib/about-content";
 
 const blank = (categoryId = ""): Project => ({
   id: "", slug: "", titleZh: "", titleEn: "", categoryId, subtitleZh: "", subtitleEn: "", year: "",
@@ -38,6 +39,8 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
   const [previewed, setPreviewed] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [journalDirty, setJournalDirty] = useState(false);
+  const [aboutContent, setAboutContent] = useState<AboutContent>(defaultAboutContent);
+  const [aboutDirty, setAboutDirty] = useState(false);
 
   const notify = (message: string) => {
     setToast(message);
@@ -53,6 +56,7 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
       setProjects(projectData);
       setCategories(categoryData);
       setSettings(settingsData);
+      setAboutContent(parseAboutContent(settingsData.about));
     } catch (error) {
       notify((error as Error).message);
     } finally {
@@ -63,14 +67,14 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => {
-      if (dirty || settingsDirty || categoriesDirty || journalDirty) {
+      if (dirty || settingsDirty || categoriesDirty || journalDirty || aboutDirty) {
         event.preventDefault();
         event.returnValue = "";
       }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, [dirty, settingsDirty, categoriesDirty, journalDirty]);
+  }, [dirty, settingsDirty, categoriesDirty, journalDirty, aboutDirty]);
 
   const update = (key: keyof Project, value: unknown) => {
     setCurrent((project) => project ? { ...project, [key]: value } : project);
@@ -287,6 +291,7 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
     <div className="admin-tabs">
       <button type="button" className={tab === "projects" ? "active" : ""} onClick={() => setTab("projects")}>案例</button>
       <button type="button" className={tab === "journal" ? "active" : ""} onClick={() => setTab("journal")}>文章</button>
+      <button type="button" className={tab === "about" ? "active" : ""} onClick={() => setTab("about")}>关于</button>
       <button type="button" className={tab === "settings" ? "active" : ""} onClick={() => setTab("settings")}>网站设置</button>
       <button type="button" className={tab === "categories" ? "active" : ""} onClick={() => setTab("categories")}>分类</button>
     </div>
@@ -341,6 +346,21 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
 
     {tab === "journal" && <JournalAdmin notify={notify} onDirtyChange={setJournalDirty} />}
 
+    {tab === "about" && settings && <section className="admin-panel">
+      <div className="form-grid">
+        <div className="field field-wide"><label>首页 About 大标题（换行会保留）</label><textarea value={aboutContent.homeTitle} onChange={(event) => { setAboutContent({ ...aboutContent, homeTitle: event.target.value }); setAboutDirty(true); }} /></div>
+        {aboutContent.homeParagraphs.map((paragraph, index) => <div className="field field-wide" key={`home-${index}`}><label>首页介绍第 {index + 1} 段</label><textarea value={paragraph} onChange={(event) => { const next = [...aboutContent.homeParagraphs]; next[index] = event.target.value; setAboutContent({ ...aboutContent, homeParagraphs: next }); setAboutDirty(true); }} /></div>)}
+        <div className="field"><label>首页按钮文字</label><input value={aboutContent.homeCtaLabel} onChange={(event) => { setAboutContent({ ...aboutContent, homeCtaLabel: event.target.value }); setAboutDirty(true); }} /></div>
+        <div className="field field-wide"><label>About 页面主标题</label><textarea value={aboutContent.pageTitle} onChange={(event) => { setAboutContent({ ...aboutContent, pageTitle: event.target.value }); setAboutDirty(true); }} /></div>
+        {aboutContent.backgroundParagraphs.map((paragraph, index) => <div className="field field-wide" key={`background-${index}`}><label>个人背景第 {index + 1} 段</label><textarea value={paragraph} onChange={(event) => { const next = [...aboutContent.backgroundParagraphs]; next[index] = event.target.value; setAboutContent({ ...aboutContent, backgroundParagraphs: next }); setAboutDirty(true); }} /></div>)}
+      </div>
+      <h2>专业领域</h2>
+      <div className="form-grid">{aboutContent.services.map((item, index) => <div className="field field-wide" key={`service-${index}`}><label>{item.number} 专业领域</label><input value={item.title} placeholder="标题" onChange={(event) => { const next = aboutContent.services.map((value, itemIndex) => itemIndex === index ? { ...value, title: event.target.value } : value); setAboutContent({ ...aboutContent, services: next }); setAboutDirty(true); }} /><textarea value={item.detail} placeholder="说明" onChange={(event) => { const next = aboutContent.services.map((value, itemIndex) => itemIndex === index ? { ...value, detail: event.target.value } : value); setAboutContent({ ...aboutContent, services: next }); setAboutDirty(true); }} /></div>)}</div>
+      <h2>工作方法</h2>
+      <div className="form-grid">{aboutContent.process.map((item, index) => <div className="field field-wide" key={`process-${index}`}><label>{item.number} 工作方法</label><input value={item.title} placeholder="标题" onChange={(event) => { const next = aboutContent.process.map((value, itemIndex) => itemIndex === index ? { ...value, title: event.target.value } : value); setAboutContent({ ...aboutContent, process: next }); setAboutDirty(true); }} /><textarea value={item.detail} placeholder="说明" onChange={(event) => { const next = aboutContent.process.map((value, itemIndex) => itemIndex === index ? { ...value, detail: event.target.value } : value); setAboutContent({ ...aboutContent, process: next }); setAboutDirty(true); }} /></div>)}</div>
+      <div className="admin-actions"><span className="action-note">{aboutDirty ? "有未保存修改" : "已保存"}</span><button type="button" className="btn btn-primary" disabled={!aboutDirty} onClick={async () => { try { const about = serializeAboutContent(aboutContent); await json("/api/settings", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...settings, about }) }); setSettings({ ...settings, about }); setAboutDirty(false); notify("关于内容已保存"); } catch (error) { notify((error as Error).message); } }}>保存关于内容</button></div>
+    </section>}
+
     {tab === "settings" && settings && <section className="admin-panel"><div className="form-grid">
       <div className="field"><label>网站名称</label><input value={settings.siteName} onChange={(event) => { setSettings({ ...settings, siteName: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field"><label>联系方式</label><input value={settings.contact} onChange={(event) => { setSettings({ ...settings, contact: event.target.value }); setSettingsDirty(true); }} /></div>
@@ -350,7 +370,6 @@ export default function AdminClient({ email, signOutPath }: { email: string; sig
       <div className="field field-wide"><label>首页中文标题</label><input value={settings.heroTitleZh} onChange={(event) => { setSettings({ ...settings, heroTitleZh: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field field-wide"><label>首页首屏介绍</label><textarea value={settings.heroDescription} onChange={(event) => { setSettings({ ...settings, heroDescription: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field field-wide"><label>首页介绍文字</label><textarea value={settings.intro} onChange={(event) => { setSettings({ ...settings, intro: event.target.value }); setSettingsDirty(true); }} /></div>
-      <div className="field field-wide"><label>About 内容</label><textarea value={settings.about} onChange={(event) => { setSettings({ ...settings, about: event.target.value }); setSettingsDirty(true); }} /></div>
       <div className="field field-wide"><label>社交媒体链接（JSON）</label><textarea value={settings.socialLinks} onChange={(event) => { setSettings({ ...settings, socialLinks: event.target.value }); setSettingsDirty(true); }} /></div>
     </div><div className="admin-actions"><span className="action-note">{settingsDirty ? "有未保存修改" : "已保存"}</span><button type="button" className="btn btn-primary" onClick={async () => { try { JSON.parse(settings.socialLinks || "{}"); await json("/api/settings", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(settings) }); setSettingsDirty(false); notify("网站设置已保存"); } catch (error) { notify(error instanceof SyntaxError ? "社交媒体链接不是有效 JSON" : (error as Error).message); } }}>保存设置</button></div></section>}
 
