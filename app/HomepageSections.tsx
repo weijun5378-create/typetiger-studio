@@ -1,5 +1,6 @@
 import type { JournalArticle } from "@/lib/journal-shared";
 import { formatJournalDate } from "@/lib/journal-shared";
+import type { AboutContent } from "@/lib/about-content";
 
 const expertise = [
   ["01", "产品与 CMF", "以色彩、材料与表面工艺策略，构建具有辨识度且协调统一的产品家族。"],
@@ -29,9 +30,9 @@ export function DesignApproach() {
   </section>;
 }
 
-export function AboutPreview() {
+export function AboutPreview({ content }: { content: AboutContent }) {
   return <section className="homepage-section about-preview" id="about-preview" aria-labelledby="about-preview-title">
-    <p className="section-kicker">About / 关于</p><div className="about-preview-grid"><h2 id="about-preview-title">设计总监，<br />也是持续实践的设计者。</h2><div><p>Typetiger Studio 是我的个人作品集与设计思考载体，记录我在消费产品、品牌识别与视觉系统中的实践。</p><p>工作跨越创意指导、产品思维和跨品类协作，也关注团队如何建立清晰、一致且可以持续推进的设计判断。</p><a className="editorial-link" href="/about">了解个人背景 ↗</a></div></div>
+    <p className="section-kicker">About / 关于</p><div className="about-preview-grid"><h2 id="about-preview-title">{content.homeTitle.split("\n").map((line, index) => <span key={`${line}-${index}`}>{line}{index < content.homeTitle.split("\n").length - 1 && <br />}</span>)}</h2><div>{content.homeParagraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}<a className="editorial-link" href="/about">{content.homeCtaLabel} ↗</a></div></div>
   </section>;
 }
 export function JournalPreview({ articles }: { articles: JournalArticle[] }) {
